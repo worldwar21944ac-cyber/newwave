@@ -1,8 +1,10 @@
 name: base
 channels:
   - defaults
-  - conda-forge
 dependencies:
   - python=3.10
-  - pytest
-  - flake8
+  - pip
+  - pip:
+      - -r requirements.txt
+      - flake8>=6,<8
+      - pytest>=7,<9
