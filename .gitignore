@@ -10,3 +10,4 @@ node_modules/
 .dev.vars
 dist/
 *.log
+worker-configuration.d.ts
