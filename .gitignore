@@ -5,3 +5,8 @@ __pycache__/
 .generated_audio_tmp/
 /generated_audio/*
 !generated_audio/.gitkeep
+node_modules/
+.wrangler/
+.dev.vars
+dist/
+*.log
