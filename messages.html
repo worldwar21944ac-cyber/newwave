@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPIDER Social — Messages</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
+</head>
+<body data-page="messages">
+  <header class="header">
+    <div class="wrap nav">
+      <a class="brand" href="index.html"><div class="brand-logo">S</div><div><h1>SPIDER Social</h1><p>Messages</p></div></a>
+      <nav class="nav-links">
+        <a data-nav="home" href="index.html">Home</a>
+        <a data-nav="feed" href="feed.html">Feed</a>
+        <a data-nav="stories" href="stories.html">Stories</a>
+        <a data-nav="network" href="network.html">Network</a>
+        <a data-nav="offers" href="offers.html">Offers</a>
+        <a data-nav="messages" href="messages.html">Messages</a>
+        <a data-nav="profile" href="profile.html">Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="wrap">
+      <section class="section-head">
+        <div>
+          <h3>Private threads.</h3>
+          <p>Direct messages, group chats, and quick replies in a clean inbox layout.</p>
+        </div>
+      </section>
+
+      <div class="dm-layout">
+        <aside class="dm-list">
+          <div class="dm-entry active" data-dm-thread data-name="Maya" data-subtitle="Creative thread · 2 unread">
+            <strong>Maya</strong>
+            <p>That new room design is wild.</p>
+          </div>
+          <div class="dm-entry" data-dm-thread data-name="Ren" data-subtitle="Design thread · last seen 5m ago">
+            <strong>Ren</strong>
+            <p>Need the profile mockups?</p>
+          </div>
+          <div class="dm-entry" data-dm-thread data-name="Offer Desk" data-subtitle="Opportunities · 4 new">
+            <strong>Offer Desk</strong>
+            <p>You have three fresh invites.</p>
+          </div>
+        </aside>
+
+        <section class="chat-window">
+          <div class="profile-header">
+            <div>
+              <h3 data-chat-title>Maya</h3>
+              <p data-chat-subtitle>Creative thread · 2 unread</p>
+            </div>
+            <span class="badge">Encrypted DM demo</span>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div class="message them">I saw the feed update. The web theme is landing strong.</div>
+            <div class="message me">Good. I want it to feel familiar but still totally ours.</div>
+            <div class="message them">Then keep the spider visible on every page. That makes it memorable.</div>
+            <div class="message me">Exactly. Feed, stories, network, offers, messages — all one system.</div>
+          </div>
+
+          <form class="composer" data-composer style="margin-top:18px;">
+            <textarea placeholder="Write a message..."></textarea>
+            <div class="cta-row" style="margin-top:0;">
+              <button class="btn btn-primary" type="submit">Send message</button>
+              <span class="note" data-composer-note>Ready to send.</span>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <div>Messages page — clean inbox, private threads.</div>
+      <div>Built to feel instant and familiar.</div>
+    </div>
+  </footer>
+</body>
+</html>

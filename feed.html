@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPIDER Social — Feed</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="app.js"></script>
+</head>
+<body data-page="feed">
+  <header class="header">
+    <div class="wrap nav">
+      <a class="brand" href="index.html"><div class="brand-logo">S</div><div><h1>SPIDER Social</h1><p>Feed</p></div></a>
+      <nav class="nav-links">
+        <a data-nav="home" href="index.html">Home</a>
+        <a data-nav="feed" href="feed.html">Feed</a>
+        <a data-nav="stories" href="stories.html">Stories</a>
+        <a data-nav="network" href="network.html">Network</a>
+        <a data-nav="offers" href="offers.html">Offers</a>
+        <a data-nav="messages" href="messages.html">Messages</a>
+        <a data-nav="profile" href="profile.html">Profile</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="wrap">
+      <section class="section-head">
+        <div>
+          <h3>The web is alive.</h3>
+          <p>The feed mixes creator posts, network updates, and offer posts — like a blend of Facebook, Instagram, and the chance-driven part of social discovery.</p>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="creator">Creators</button>
+        <button class="chip" data-filter="network">Network</button>
+        <button class="chip" data-filter="offers">Offers</button>
+        <button class="chip" data-filter="community">Community</button>
+      </div>
+
+      <div class="feed-layout">
+        <aside class="sidebar">
+          <div class="side-card">
+            <h4>Your web snapshot</h4>
+            <ul>
+              <li>128 active threads</li>
+              <li>34 new connections this week</li>
+              <li>12 offers in the flies tab</li>
+              <li>8 people waiting for reply</li>
+            </ul>
+          </div>
+          <div class="side-card">
+            <h4>Shortcuts</h4>
+            <ul>
+              <li><a href="stories.html">Story studio</a></li>
+              <li><a href="messages.html">Inbox</a></li>
+              <li><a href="offers.html">Catch offers</a></li>
+              <li><a href="profile.html">Web profile</a></li>
+            </ul>
+          </div>
+        </aside>
+
+        <section>
+          <form class="composer" data-composer>
+            <textarea placeholder="Share an update with your web..." aria-label="Create post"></textarea>
+            <div class="composer-row">
+              <input type="text" placeholder="Add a location, tag, or mood" />
+              <select aria-label="Post type">
+                <option>Public post</option>
+                <option>Close friends</option>
+                <option>Network update</option>
+                <option>Offer post</option>
+              </select>
+            </div>
+            <div class="cta-row" style="margin-top:0;">
+              <button class="btn btn-primary" type="submit">Post to the web</button>
+              <span class="note" data-composer-note>Ready to share.</span>
+            </div>
+          </form>
+
+          <article class="post" data-feed-item data-category="creator">
+            <div class="post-top">
+              <div class="author"><div class="avatar">K</div><div><strong>Kai</strong><small>2 min ago · Creator update</small></div></div>
+              <span class="badge">Public</span>
+            </div>
+            <h4>First thread of the day</h4>
+            <p>The web is stronger when the connections are real. New people, new rooms, new momentum.</p>
+            <div class="post-media"></div>
+            <div class="post-actions">
+              <button class="action" data-action="toggle-like">Like</button>
+              <button class="action" data-action="save-post">Save</button>
+              <button class="action">Comment</button>
+              <button class="action">Share</button>
+            </div>
+          </article>
+
+          <article class="post" data-feed-item data-category="network">
+            <div class="post-top">
+              <div class="author"><div class="avatar">M</div><div><strong>Maya</strong><small>18 min ago · Network boost</small></div></div>
+              <span class="badge">Connection</span>
+            </div>
+            <h4>New mutual connection unlocked</h4>
+            <p>Two new introductions lit up the web tonight. The graph is starting to feel alive.</p>
+            <div class="post-actions">
+              <button class="action" data-action="toggle-like">Like</button>
+              <button class="action" data-action="save-post">Save</button>
+              <button class="action">Introduce</button>
+            </div>
+          </article>
+
+          <article class="post" data-feed-item data-category="offers">
+            <div class="post-top">
+              <div class="author"><div class="avatar">F</div><div><strong>Flies tab</strong><small>32 min ago · Opportunity</small></div></div>
+              <span class="badge">Offer</span>
+            </div>
+            <h4>Brand collab invite</h4>
+            <p>A limited sponsorship invite landed in your web: product launch, creator stream, and community takeover.</p>
+            <div class="post-actions">
+              <button class="action" data-action="toggle-like">Like</button>
+              <button class="action" data-action="save-post">Save</button>
+              <button class="action">Accept</button>
+              <button class="action">Decline</button>
+            </div>
+          </article>
+
+          <article class="post" data-feed-item data-category="community">
+            <div class="post-top">
+              <div class="author"><div class="avatar">W</div><div><strong>Web Room</strong><small>1 hr ago · Community drop</small></div></div>
+              <span class="badge">Room</span>
+            </div>
+            <h4>Tonight’s open room is live</h4>
+            <p>Ask questions, share updates, and keep the room moving. The web grows every time the room gets active.</p>
+            <div class="post-actions">
+              <button class="action" data-action="toggle-like">Like</button>
+              <button class="action" data-action="save-post">Save</button>
+              <button class="action">Join room</button>
+            </div>
+          </article>
+        </section>
+
+        <aside class="rightbar">
+          <div class="right-card">
+            <h4>Trending in the web</h4>
+            <ul>
+              <li>#ThreadUp</li>
+              <li>#WebLaunch</li>
+              <li>#FliesAndOffers</li>
+              <li>#NewConnection</li>
+            </ul>
+          </div>
+          <div class="right-card">
+            <h4>Suggested follow</h4>
+            <ul>
+              <li>Design nodes that match your vibe</li>
+              <li>Founders building in public</li>
+              <li>Creators with strong web growth</li>
+              <li>People near your live zones</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-row">
+      <div>Feed page — familiar scroll, stronger identity.</div>
+      <div>Posts are static demo content, ready to expand into real data later.</div>
+    </div>
+  </footer>
+</body>
+</html>
