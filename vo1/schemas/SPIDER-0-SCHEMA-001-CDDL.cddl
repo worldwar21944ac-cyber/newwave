@@ -1,0 +1,49 @@
+; SPIDER-0-SCHEMA-001-CDDL / implementation-aligned subset
+; Source baseline: SPIDER-0-SPEC-002 v0.1
+
+spider0-envelope = {
+  "magic": uint,
+  "version": uint,
+  "msg_type": uint,
+  "node_id": node-id,
+  "seq": uint,
+  "timestamp": uint,
+  "flags": uint,
+  "payload_len": uint,
+  "payload": payload,
+  ? "signature": signature
+}
+
+node-id = tstr .size (1..64)
+signature = bstr .size 64
+
+payload = telemetry-payload / presence-payload / event-payload / cluster-presence-payload
+
+telemetry-payload = {
+  1: int,
+  2: int,
+  3: uint,
+  4: uint,
+  5: uint,
+  6: uint,
+  7: uint,
+  8: int,
+  9: uint,
+  10: uint,
+  11: uint,
+  12: uint .le 65535,
+  13: uint
+}
+
+presence-payload = { * uint => uint }
+event-payload = { 1: uint, 2: uint, 3: uint, 4: uint, 5: tstr }
+
+cluster-presence-payload = {
+  1: cluster-id,
+  2: uint,
+  3: uint,
+  4: [* node-summary-record]
+}
+
+cluster-id = bstr .size (4..8) / tstr
+node-summary-record = [node-id, uint, uint, int, uint, uint]

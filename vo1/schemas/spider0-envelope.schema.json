@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/vo1/spider0/telemetry-v0.1.json",
+  "title": "SPIDER-0 Telemetry Envelope",
+  "type": "object",
+  "required": ["magic", "version", "msg_type", "node_id", "seq", "timestamp", "flags", "payload_len", "payload"],
+  "properties": {
+    "magic": {"const": 21328},
+    "version": {"const": 1},
+    "msg_type": {"type": "integer", "minimum": 1, "maximum": 4},
+    "node_id": {"type": "string", "minLength": 1, "maxLength": 64},
+    "seq": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+    "timestamp": {"type": "integer", "minimum": 0, "maximum": 18446744073709551615},
+    "flags": {"type": "integer", "minimum": 0, "maximum": 255},
+    "payload_len": {"type": "integer", "minimum": 0, "maximum": 65535},
+    "payload": {"type": "object"},
+    "signature": {"type": "string", "pattern": "^[0-9a-fA-F]{128}$"}
+  }
+}
