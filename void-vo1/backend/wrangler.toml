@@ -1,0 +1,4 @@
+name='void-vo1-api'
+main='entry.py'
+compatibility_date='2026-08-01'
+compatibility_flags=['python_workers']
