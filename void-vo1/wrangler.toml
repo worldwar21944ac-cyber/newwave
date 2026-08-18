@@ -1,0 +1,4 @@
+name='void-vo1-ui'
+compatibility_date='2026-08-01'
+[assets]
+directory='./dist'
