@@ -18,18 +18,26 @@ without connecting to an external TTS provider.
 
 ## Ruby OS v4.2 simulation
 
-A standalone Ruby OS v4.2 simulation is now included at:
+A standalone Ruby OS v4.2 simulation is included at:
 
-- `RUBY_OS_v4.2.py`
+- `RUBY_OS_v4.2.py` — Tkinter simulation dashboard
+- `run_ruby_os_v4.2.sh` — launch wrapper for Python 3 environments
 
-Run it with:
+Run directly:
 
 ```bash
 python3 RUBY_OS_v4.2.py
 ```
 
-The simulation opens a Tkinter dashboard with four live controls, a ring map,
-status feedback, and an optional auto-drift mode.
+Or use the launcher:
+
+```bash
+./run_ruby_os_v4.2.sh
+```
+
+The simulation opens a Tkinter dashboard with four live telemetry controls,
+a five-ring facility map, pass/block status feedback, deterministic blocker
+reporting, SHA-256 state digests, and an optional auto-drift mode.
 
 ## Getting started
 
@@ -65,3 +73,5 @@ status feedback, and an optional auto-drift mode.
   generated waveform so that UI controls have visible effects.
 - Replace the `_generate_waveform` function with calls to your preferred
   TTS engine when you are ready to integrate real speech synthesis.
+- The Ruby OS v4.2 dashboard is a standalone local simulation and does not
+  replace or modify the Cloudflare Worker runtime in this repository.
