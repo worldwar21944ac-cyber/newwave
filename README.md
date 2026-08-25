@@ -20,19 +20,18 @@ without connecting to an external TTS provider.
 
 A standalone Ruby OS v4.2 simulation is included at:
 
-- `RUBY_OS_v4.2.py` — Tkinter simulation dashboard
-- `run_ruby_os_v4.2.sh` — launch wrapper for Python 3 environments
+- `Newwave.v.1` — Tkinter simulation dashboard
 
-Run directly:
+Run it directly:
 
 ```bash
-python3 RUBY_OS_v4.2.py
+python3 Newwave.v.1
 ```
 
-Or use the launcher:
+Or use the repo launcher:
 
 ```bash
-./run_ruby_os_v4.2.sh
+npm run ruby-os
 ```
 
 The simulation opens a Tkinter dashboard with four live telemetry controls,
