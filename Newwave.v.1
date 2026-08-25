@@ -1,1 +1,294 @@
+#!/usr/bin/env python3
+"""Ruby OS v4.2 simulation runner.
 
+Standalone Tkinter simulation with four telemetry sliders, live pass/block
+status, a five-ring facility map, and an auto-drift mode.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import tkinter as tk
+from dataclasses import dataclass
+from tkinter import ttk
+from typing import Dict, List, Tuple
+
+POLAR_TARGET_MAX_DEG = 0.60
+THERMAL_MAX_WCM2 = 15.0
+POGO_MAX_MOHM = 15.0
+CRYO_MAX_K = 41.5
+YIELD_MIN_PCT = 90.0
+ISOLATION_MIN_DB = 35.0
+NOMINAL_FORWARD_YIELD = 94.20
+BASE_LEAK_DB = -38.40
+
+
+class Colors:
+    BG = "#0a0e14"
+    SURFACE = "#111820"
+    CARD = "#161d27"
+    ELEVATED = "#1c2530"
+    BORDER = "#2a3544"
+    BORDER_SOFT = "#1f2a38"
+    ACCENT = "#3d8bfd"
+    GREEN = "#22c55e"
+    RED = "#ef4444"
+    TEXT = "#c9d1d9"
+    TEXT_BRIGHT = "#f0f4f8"
+    MUTED = "#7d8a99"
+    MUTED_2 = "#5a6775"
+
+
+@dataclass
+class Telemetry:
+    forward_yield: float
+    isolation_db: float
+    blockers: List[str]
+    colors: Dict[str, str]
+    ok: bool
+    digest: str
+
+
+class RubyOSSimulation(tk.Tk):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title("Ruby OS v4.2  •  Simulation")
+        self.geometry("1240x820")
+        self.minsize(1020, 700)
+        self.configure(bg=Colors.BG)
+
+        self.auto_run = tk.BooleanVar(value=False)
+        self.polarization_error = tk.DoubleVar(value=0.0)
+        self.thermal_dissipation = tk.DoubleVar(value=12.5)
+        self.pogo_resistance = tk.DoubleVar(value=8.31)
+        self.cryo_temp = tk.DoubleVar(value=40.0)
+        self._phase = 0.0
+        self._after_id: str | None = None
+        self._labels: Dict[str, Tuple[tk.Label, str]] = {}
+
+        self._setup_styles()
+        self._build_ui()
+        self._bind_events()
+        self.update_simulation()
+
+    def _setup_styles(self) -> None:
+        style = ttk.Style(self)
+        style.theme_use("clam")
+        style.configure(".", background=Colors.CARD, foreground=Colors.TEXT, font=("Segoe UI", 10))
+        style.configure("TFrame", background=Colors.CARD)
+        style.configure("TLabel", background=Colors.CARD, foreground=Colors.TEXT)
+        style.configure("Ruby.Horizontal.TScale", background=Colors.CARD, troughcolor=Colors.ELEVATED, bordercolor=Colors.BORDER, lightcolor=Colors.ACCENT, darkcolor="#2563b8", sliderthickness=18)
+        style.map("Ruby.Horizontal.TScale", background=[("active", Colors.ACCENT)])
+        style.configure("Accent.TButton", background=Colors.ACCENT, foreground=Colors.BG, font=("Segoe UI", 10, "bold"), padding=(14, 7), borderwidth=0)
+        style.map("Accent.TButton", background=[("active", "#5ba0ff")])
+        style.configure("Ghost.TButton", background=Colors.ELEVATED, foreground=Colors.TEXT, font=("Segoe UI", 10), padding=(12, 6), borderwidth=0)
+        style.map("Ghost.TButton", background=[("active", Colors.BORDER)])
+
+    def _build_ui(self) -> None:
+        head = tk.Frame(self, bg=Colors.SURFACE, height=64)
+        head.pack(fill="x")
+        head.pack_propagate(False)
+        tk.Label(head, text="RUBY OS", font=("Courier New", 16, "bold"), fg=Colors.ACCENT, bg=Colors.SURFACE).pack(side="left", padx=20, pady=12)
+        self._status = tk.Label(head, text="SYSTEM NOMINAL", font=("Segoe UI", 10, "bold"), fg=Colors.GREEN, bg=Colors.SURFACE)
+        self._status.pack(side="right", padx=20)
+        tk.Frame(self, bg=Colors.BORDER_SOFT, height=1).pack(fill="x")
+
+        main = tk.Frame(self, bg=Colors.BG)
+        main.pack(fill="both", expand=True, padx=16, pady=16)
+
+        left = tk.Frame(main, bg=Colors.BG, width=380)
+        left.pack(side="left", fill="y", padx=(0, 12))
+        left.pack_propagate(False)
+        right = tk.Frame(main, bg=Colors.BG)
+        right.pack(side="right", fill="both", expand=True)
+
+        ctrl = self._card(left, "PHYSICAL TELEMETRY")
+        ctrl.pack(fill="both", expand=True)
+        self._slider(ctrl, "Polarization Angle Error", self.polarization_error, -5.0, 5.0, "°", f"Target ±{POLAR_TARGET_MAX_DEG:.2f}°")
+        self._slider(ctrl, "Micro-Heater Dissipation", self.thermal_dissipation, 0.0, 25.0, "W/cm²", f"Ceiling ≤ {THERMAL_MAX_WCM2:.1f} W/cm²")
+        self._slider(ctrl, "Bus Contact Resistance", self.pogo_resistance, 0.0, 30.0, "mΩ", f"Ceiling ≤ {POGO_MAX_MOHM:.1f} mΩ")
+        self._slider(ctrl, "Stirling Cold-Finger", self.cryo_temp, 30.0, 60.0, "K", f"NbN limit ≤ {CRYO_MAX_K:.1f} K")
+
+        actions = tk.Frame(ctrl.content, bg=Colors.CARD)
+        actions.pack(fill="x", pady=(8, 10))
+        ttk.Button(actions, text="Reset Nominal", command=self._reset, style="Accent.TButton").pack(side="left", padx=(0, 8))
+        ttk.Button(actions, text="Re-Evaluate", command=self.update_simulation, style="Ghost.TButton").pack(side="left", padx=(0, 8))
+        ttk.Button(actions, text="Start/Stop Run", command=self._toggle_auto, style="Ghost.TButton").pack(side="left")
+        tk.Checkbutton(actions, text="Auto-drift simulation", variable=self.auto_run, command=self._toggle_auto, bg=Colors.CARD, fg=Colors.TEXT, activebackground=Colors.CARD, activeforeground=Colors.TEXT_BRIGHT, selectcolor=Colors.ELEVATED, relief="flat", highlightthickness=0).pack(anchor="w", pady=(10, 0))
+
+        self.result_box = tk.LabelFrame(ctrl.content, text=" LIVE RESULT ", bg=Colors.CARD, fg=Colors.ACCENT, font=("Segoe UI", 10, "bold"), padx=10, pady=10)
+        self.result_box.pack(fill="x", pady=(6, 0))
+        self.result_label = tk.Label(self.result_box, text="", justify="left", anchor="w", bg=Colors.CARD, fg=Colors.TEXT_BRIGHT, font=("Segoe UI", 9))
+        self.result_label.pack(fill="x")
+
+        map_card = self._card(right, "FACILITY COMPLEX 5000  ·  SPATIAL MAP")
+        map_card.pack(fill="both", expand=True, pady=(0, 12))
+        self.canvas = tk.Canvas(map_card.content, bg=Colors.BG, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
+
+        console_card = self._card(right, "RUBY OS DIALECT  ·  CONSOLE")
+        console_card.pack(fill="x")
+        self.console = tk.Text(console_card.content, bg=Colors.BG, fg=Colors.ACCENT, font=("Courier New", 10), height=7, wrap="word", bd=0, highlightthickness=0, padx=10, pady=8, insertbackground=Colors.ACCENT)
+        self.console.pack(fill="both", expand=True)
+
+    def _card(self, parent: tk.Widget, title: str) -> tk.Frame:
+        outer = tk.Frame(parent, bg=Colors.BORDER_SOFT, padx=1, pady=1)
+        inner = tk.Frame(outer, bg=Colors.CARD)
+        inner.pack(fill="both", expand=True)
+        bar = tk.Frame(inner, bg=Colors.ELEVATED, height=32)
+        bar.pack(fill="x")
+        bar.pack_propagate(False)
+        tk.Label(bar, text=title, font=("Segoe UI", 9, "bold"), fg=Colors.MUTED, bg=Colors.ELEVATED, anchor="w").pack(side="left", padx=12, pady=6)
+        content = tk.Frame(inner, bg=Colors.CARD)
+        content.pack(fill="both", expand=True, padx=12, pady=10)
+        outer.content = content  # type: ignore[attr-defined]
+        return outer
+
+    def _slider(self, card: tk.Frame, label: str, variable: tk.DoubleVar, low: float, high: float, unit: str, hint: str) -> None:
+        parent = card.content  # type: ignore[attr-defined]
+        row = tk.Frame(parent, bg=Colors.CARD)
+        row.pack(fill="x", pady=(0, 14))
+        top = tk.Frame(row, bg=Colors.CARD)
+        top.pack(fill="x")
+        tk.Label(top, text=label, font=("Segoe UI", 10, "bold"), fg=Colors.TEXT_BRIGHT, bg=Colors.CARD).pack(side="left")
+        value = tk.Label(top, text="", font=("Courier New", 11, "bold"), fg=Colors.ACCENT, bg=Colors.CARD)
+        value.pack(side="right")
+        self._labels[label] = (value, unit)
+        ttk.Scale(row, from_=low, to=high, variable=variable, orient="horizontal", style="Ruby.Horizontal.TScale", command=lambda _: self.update_simulation()).pack(fill="x", pady=(4, 2))
+        tk.Label(row, text=hint, font=("Segoe UI", 8), fg=Colors.MUTED_2, bg=Colors.CARD).pack(anchor="w")
+
+    def _bind_events(self) -> None:
+        self.canvas.bind("<Configure>", lambda e: self.update_simulation())
+
+    def _reset(self) -> None:
+        self.polarization_error.set(0.0)
+        self.thermal_dissipation.set(12.5)
+        self.pogo_resistance.set(8.31)
+        self.cryo_temp.set(40.0)
+        self.update_simulation()
+
+    def _toggle_auto(self) -> None:
+        if self.auto_run.get():
+            self._schedule_auto()
+        elif self._after_id:
+            self.after_cancel(self._after_id)
+            self._after_id = None
+
+    def _schedule_auto(self) -> None:
+        if self._after_id:
+            self.after_cancel(self._after_id)
+        self._step_auto()
+        self._after_id = self.after(120, self._schedule_auto)
+
+    def _step_auto(self) -> None:
+        self._phase += 0.08
+        self.polarization_error.set(0.9 * math.sin(self._phase * 0.75))
+        self.thermal_dissipation.set(12.5 + 6.0 * (0.5 + 0.5 * math.sin(self._phase * 1.3)))
+        self.pogo_resistance.set(8.31 + 6.5 * (0.5 + 0.5 * math.sin(self._phase * 0.97 + 1.5)))
+        self.cryo_temp.set(39.8 + 2.8 * (0.5 + 0.5 * math.sin(self._phase * 0.61 + 0.4)))
+        self.update_simulation()
+
+    def _compute(self) -> Telemetry:
+        angle = self.polarization_error.get()
+        thermal = self.thermal_dissipation.get()
+        resistance = self.pogo_resistance.get()
+        cryo = self.cryo_temp.get()
+        angle_rad = math.radians(angle)
+        forward_yield = NOMINAL_FORWARD_YIELD * (math.cos(angle_rad) ** 2)
+        leak = max(10 ** (BASE_LEAK_DB / 10.0) + math.sin(2.0 * angle_rad) ** 2, 1e-20)
+        isolation = -10.0 * math.log10(leak)
+        blockers: List[str] = []
+        colors = {k: Colors.GREEN for k in ("R1", "R2", "R3", "R4", "R5")}
+        if thermal > THERMAL_MAX_WCM2:
+            blockers.append(f"THERMAL OVERFLOW — {thermal:.2f} W/cm² exceeds {THERMAL_MAX_WCM2:.1f} ceiling")
+            colors["R2"] = Colors.RED
+        if cryo > CRYO_MAX_K:
+            blockers.append(f"CRYOGENIC QUENCH — {cryo:.2f} K exceeds NbN limit {CRYO_MAX_K:.1f} K")
+            colors["R4"] = Colors.RED
+        if forward_yield < YIELD_MIN_PCT:
+            blockers.append(f"YIELD DEFICIT — waveguide at {forward_yield:.2f}% (min {YIELD_MIN_PCT:.0f}%)")
+            colors["R3"] = Colors.RED
+        if isolation < ISOLATION_MIN_DB:
+            blockers.append(f"ISOLATION DEFICIT — {isolation:.2f} dB (min {ISOLATION_MIN_DB:.0f} dB)")
+            colors["R3"] = Colors.RED
+        if resistance > POGO_MAX_MOHM:
+            blockers.append(f"INTERFACE RESISTANCE — {resistance:.2f} mΩ exceeds {POGO_MAX_MOHM:.1f} mΩ")
+            colors["R5"] = Colors.RED
+        if blockers:
+            colors["R1"] = Colors.RED
+        payload = {
+            "angle": round(angle, 4),
+            "yield": round(forward_yield, 3),
+            "isolation": round(isolation, 3),
+            "thermal": round(thermal, 3),
+            "resistance": round(resistance, 3),
+            "cryo": round(cryo, 3),
+            "ok": not blockers,
+        }
+        digest = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+        return Telemetry(forward_yield, isolation, blockers, colors, not blockers, digest)
+
+    def update_simulation(self) -> None:
+        for key, (label, fmt) in {
+            "Polarization Angle Error": (self.polarization_error.get(), "+.3f"),
+            "Micro-Heater Dissipation": (self.thermal_dissipation.get(), ".2f"),
+            "Bus Contact Resistance": (self.pogo_resistance.get(), ".2f"),
+            "Stirling Cold-Finger": (self.cryo_temp.get(), ".2f"),
+        }.items():
+            lbl, unit = self._labels[key]
+            lbl.configure(text=f"{label:{fmt}} {unit}")
+
+        t = self._compute()
+        self._status.configure(text="SYSTEM NOMINAL" if t.ok else "SYSTEM BLOCKED", fg=Colors.GREEN if t.ok else Colors.RED)
+        self._render_console(t)
+        self._render_result(t)
+        self._draw_map(t)
+
+    def _render_result(self, t: Telemetry) -> None:
+        if t.ok:
+            text = f"OK — launch-ready\nForward yield: {t.forward_yield:.2f}%\nIsolation: {t.isolation_db:.2f} dB\nDigest: {t.digest[:16]}…"
+        else:
+            text = f"BLOCKED — deterministic halt\nFirst blocker: {t.blockers[0]}\nDigest: {t.digest[:16]}…"
+        self.result_label.configure(text=text)
+
+    def _render_console(self, t: Telemetry) -> None:
+        if t.ok:
+            msg = f'Ruby OS: "All parity checks green. Cleared for launch."\n\nSHA256  {t.digest[:48]}…'
+        else:
+            msg = f'Ruby OS: "Hold up — deterministic halt detected.\n  →  {t.blockers[0]}\nCorrect the bench settings."\n\nSHA256  {t.digest[:48]}…'
+        self.console.delete("1.0", tk.END)
+        self.console.insert(tk.END, msg)
+
+    def _draw_map(self, t: Telemetry) -> None:
+        c = self.canvas
+        c.delete("all")
+        c.update_idletasks()
+        w = max(c.winfo_width(), 240)
+        h = max(c.winfo_height(), 240)
+        cx, cy = w // 2, int(h * 0.52)
+        max_r = min(w, h) * 0.36
+        radii = [max_r * r for r in (0.26, 0.45, 0.62, 0.78, 0.94)]
+        names = ["R-1  Core Power Vault", "R-2  Lamination Production", "R-3  Faraday Isolation Core", "R-4  Cryogenic Grid", "R-5  Boundary Interlock"]
+        for r, key, name in zip(reversed(radii), reversed(["R1", "R2", "R3", "R4", "R5"]), reversed(names)):
+            color = t.colors[key]
+            c.create_oval(cx - r, cy - r, cx + r, cy + r, outline=color, width=2, dash=(4, 3) if color == Colors.RED else ())
+            c.create_text(cx, cy - r - 12, text=name, fill=color, font=("Segoe UI", 8, "bold"))
+        core = Colors.ACCENT if t.colors["R1"] == Colors.GREEN else Colors.RED
+        c.create_oval(cx - 20, cy - 20, cx + 20, cy + 20, fill=core, outline=Colors.BORDER, width=1)
+        c.create_text(cx, cy, text="◆", font=("Segoe UI", 12), fill=Colors.BG)
+        pad = 12
+        c.create_rectangle(pad, pad, 230, 138, fill=Colors.SURFACE, outline=Colors.BORDER_SOFT)
+        summary = f"Forward Yield   {t.forward_yield:6.2f} %\nRev Isolation   {t.isolation_db:6.2f} dB\nThermal Load    {self.thermal_dissipation.get():6.2f} W/cm²\nPin Resistance  {self.pogo_resistance.get():6.2f} mΩ\nCryo Temp       {self.cryo_temp.get():6.2f} K"
+        c.create_text(pad + 10, pad + 10, text=summary, fill=Colors.TEXT, font=("Courier New", 9), anchor="nw")
+        lx = w - 148
+        c.create_rectangle(lx, pad, w - pad, pad + 64, fill=Colors.SURFACE, outline=Colors.BORDER_SOFT)
+        c.create_oval(lx + 12, pad + 14, lx + 22, pad + 24, fill=Colors.GREEN, outline="")
+        c.create_text(lx + 30, pad + 19, text="Compliant", fill=Colors.TEXT, font=("Segoe UI", 9), anchor="w")
+        c.create_oval(lx + 12, pad + 38, lx + 22, pad + 48, fill=Colors.RED, outline="")
+        c.create_text(lx + 30, pad + 43, text="Blocked", fill=Colors.TEXT, font=("Segoe UI", 9), anchor="w")
+
+
+if __name__ == "__main__":
+    RubyOSSimulation().mainloop()
