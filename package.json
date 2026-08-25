@@ -9,7 +9,7 @@
     "deploy:preview": "wrangler versions upload",
     "check": "wrangler types --check && tsc --noEmit && wrangler deploy --dry-run",
     "types": "wrangler types",
-    "ruby-os": "python3 RUBY_OS_v4.2.py"
+    "ruby-os": "python3 Newwave.v.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.13",
