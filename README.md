@@ -16,6 +16,21 @@ without connecting to an external TTS provider.
 - `GET /api/tts/audio/<filename>` – serves previously generated audio files
   to the in-browser player or for download.
 
+## Ruby OS v4.2 simulation
+
+A standalone Ruby OS v4.2 simulation is now included at:
+
+- `RUBY_OS_v4.2.py`
+
+Run it with:
+
+```bash
+python3 RUBY_OS_v4.2.py
+```
+
+The simulation opens a Tkinter dashboard with four live controls, a ring map,
+status feedback, and an optional auto-drift mode.
+
 ## Getting started
 
 1. **Install dependencies**
