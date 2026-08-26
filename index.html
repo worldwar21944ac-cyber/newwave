@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ruby OS v4.2</title>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --surface: #111820;
+      --card: #161d27;
+      --elevated: #1c2530;
+      --border: #2a3544;
+      --border-soft: #1f2a38;
+      --accent: #3d8bfd;
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #c9d1d9;
+      --text-bright: #f0f4f8;
+      --muted: #7d8a99;
+      --muted-2: #5a6775;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #111a27 0, var(--bg) 45%);
+      color: var(--text);
+    }
+    .topbar {
+      height: 64px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .brand { display: flex; align-items: baseline; gap: 10px; }
+    .brand h1 { margin: 0; font-family: "Courier New", monospace; font-size: 16px; color: var(--accent); }
+    .brand span { color: var(--muted); font-size: 12px; }
+    .status { display: flex; align-items: center; gap: 10px; color: var(--green); font-weight: 700; }
+    .status-dot {
+      width: 12px; height: 12px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--green) 50%, transparent);
+    }
+    .wrap { display: grid; grid-template-columns: 380px 1fr; gap: 12px; padding: 16px; min-height: calc(100vh - 64px); }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 25%), var(--card);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .card .titlebar {
+      background: var(--elevated);
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-size: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .card .content { padding: 12px; }
+    .controls { display: grid; gap: 14px; }
+    .control-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .control-top label { color: var(--text-bright); font-size: 14px; font-weight: 700; }
+    .control-top .value { color: var(--accent); font-family: "Courier New", monospace; font-weight: 700; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .hint { font-size: 12px; color: var(--muted-2); margin-top: 4px; }
+    .actions { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary { background: var(--accent); color: var(--bg); }
+    .ghost { background: var(--elevated); color: var(--text); border: 1px solid var(--border); }
+    .toggle { margin-top: 6px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .result { margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: rgba(255,255,255,0.02); }
+    .result strong { color: var(--accent); }
+    .right { display: grid; gap: 12px; }
+    .canvas-wrap { position: relative; min-height: 430px; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .console {
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-family: "Courier New", monospace;
+      color: var(--accent);
+      line-height: 1.5;
+    }
+    @media (max-width: 1040px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <h1>RUBY OS</h1>
+      <span>v4.2  •  Ultra Sable Complex 5000</span>
+    </div>
+    <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">SYSTEM NOMINAL</span></div>
+  </div>
+
+  <div class="wrap">
+    <section class="card">
+      <div class="titlebar">PHYSICAL TELEMETRY</div>
+      <div class="content controls">
+        <div>
+          <div class="control-top"><label>Polarization Angle Error</label><div class="value" id="v-angle"></div></div>
+          <input id="angle" type="range" min="-5" max="5" step="0.001" value="0" />
+          <div class="hint">Target ±0.60° · Malus yield control</div>
+        </div>
+        <div>
+          <div class="control-top"><label>Micro-Heater Dissipation</label><div class="value" id="v-thermal"></div></div>
+          <input id="thermal" type="range" min="0" max="25" step="0.01" value="12.5" />
+          <div class="hint">Ceiling ≤ 15.0 W/cm²</div>
+        </div>
+        <div>
+          <div class="control-top"><label>Bus Contact Resistance</label><div class="value" id="v-resistance"></div></div>
+          <input id="resistance" type="range" min="0" max="30" step="0.01" value="8.31" />
+          <div class="hint">Ceiling ≤ 15.0 mΩ</div>
+        </div>
+        <div>
+          <div class="control-top"><label>Stirling Cold-Finger</label><div class="value" id="v-cryo"></div></div>
+          <input id="cryo" type="range" min="30" max="60" step="0.01" value="40.0" />
+          <div class="hint">NbN limit ≤ 41.5 K</div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="reset">Reset Nominal</button>
+          <button class="ghost" id="reeval">Re-Evaluate</button>
+          <button class="ghost" id="autotoggle">Start/Stop Run</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="autoRun"> Auto-drift simulation</label>
+
+        <div class="result" id="resultBox">
+          <strong id="resultHeadline">OK — launch-ready</strong>
+          <div id="resultText"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="right">
+      <section class="card canvas-wrap">
+        <div class="titlebar">FACILITY COMPLEX 5000  ·  SPATIAL MAP</div>
+        <div class="content" style="height: calc(100% - 42px);">
+          <canvas id="map"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="titlebar">RUBY OS DIALECT  ·  CONSOLE</div>
+        <div class="content console" id="console"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const POLAR_TARGET_MAX_DEG = 0.60;
+    const THERMAL_MAX_WCM2 = 15.0;
+    const POGO_MAX_MOHM = 15.0;
+    const CRYO_MAX_K = 41.5;
+    const YIELD_MIN_PCT = 90.0;
+    const ISOLATION_MIN_DB = 35.0;
+    const NOMINAL_FORWARD_YIELD = 94.20;
+    const BASE_LEAK_DB = -38.40;
+
+    const els = {
+      angle: document.getElementById('angle'),
+      thermal: document.getElementById('thermal'),
+      resistance: document.getElementById('resistance'),
+      cryo: document.getElementById('cryo'),
+      autoRun: document.getElementById('autoRun'),
+      reset: document.getElementById('reset'),
+      reeval: document.getElementById('reeval'),
+      autotoggle: document.getElementById('autotoggle'),
+      map: document.getElementById('map'),
+      console: document.getElementById('console'),
+      statusDot: document.getElementById('statusDot'),
+      statusText: document.getElementById('statusText'),
+      resultHeadline: document.getElementById('resultHeadline'),
+      resultText: document.getElementById('resultText'),
+      vAngle: document.getElementById('v-angle'),
+      vThermal: document.getElementById('v-thermal'),
+      vResistance: document.getElementById('v-resistance'),
+      vCryo: document.getElementById('v-cryo'),
+    };
+
+    let phase = 0;
+    let timer = null;
+
+    function telemetry() {
+      const angle = parseFloat(els.angle.value);
+      const thermal = parseFloat(els.thermal.value);
+      const resistance = parseFloat(els.resistance.value);
+      const cryo = parseFloat(els.cryo.value);
+      const angleRad = angle * Math.PI / 180;
+      const forwardYield = NOMINAL_FORWARD_YIELD * (Math.cos(angleRad) ** 2);
+      const leak = Math.max((10 ** (BASE_LEAK_DB / 10.0)) + Math.sin(2 * angleRad) ** 2, 1e-20);
+      const isolation = -10 * Math.log10(leak);
+      const blockers = [];
+      const colors = { R1: '#22c55e', R2: '#22c55e', R3: '#22c55e', R4: '#22c55e', R5: '#22c55e' };
+
+      if (thermal > THERMAL_MAX_WCM2) { blockers.push(`THERMAL OVERFLOW — ${thermal.toFixed(2)} W/cm² exceeds ${THERMAL_MAX_WCM2.toFixed(1)} ceiling`); colors.R2 = '#ef4444'; }
+      if (cryo > CRYO_MAX_K) { blockers.push(`CRYOGENIC QUENCH — ${cryo.toFixed(2)} K exceeds NbN limit ${CRYO_MAX_K.toFixed(1)} K`); colors.R4 = '#ef4444'; }
+      if (forwardYield < YIELD_MIN_PCT) { blockers.push(`YIELD DEFICIT — waveguide at ${forwardYield.toFixed(2)}% (min ${YIELD_MIN_PCT.toFixed(0)}%)`); colors.R3 = '#ef4444'; }
+      if (isolation < ISOLATION_MIN_DB) { blockers.push(`ISOLATION DEFICIT — ${isolation.toFixed(2)} dB (min ${ISOLATION_MIN_DB.toFixed(0)} dB)`); colors.R3 = '#ef4444'; }
+      if (resistance > POGO_MAX_MOHM) { blockers.push(`INTERFACE RESISTANCE — ${resistance.toFixed(2)} mΩ exceeds ${POGO_MAX_MOHM.toFixed(1)} mΩ`); colors.R5 = '#ef4444'; }
+      if (blockers.length) colors.R1 = '#ef4444';
+
+      const payload = { angle, thermal, resistance, cryo, forwardYield: +forwardYield.toFixed(3), isolation: +isolation.toFixed(3), ok: !blockers.length };
+      const digest = sha256(JSON.stringify(payload));
+      return { angle, thermal, resistance, cryo, forwardYield, isolation, blockers, colors, ok: !blockers.length, digest };
+    }
+
+    function sha256(s) {
+      const encoder = new TextEncoder();
+      return crypto.subtle.digest('SHA-256', encoder.encode(s)).then(buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join(''));
+    }
+
+    async function render() {
+      const t = telemetry();
+      const digest = await t.digest;
+
+      els.vAngle.textContent = `${t.angle >= 0 ? '+' : ''}${t.angle.toFixed(3)} °`;
+      els.vThermal.textContent = `${t.thermal.toFixed(2)} W/cm²`;
+      els.vResistance.textContent = `${t.resistance.toFixed(2)} mΩ`;
+      els.vCryo.textContent = `${t.cryo.toFixed(2)} K`;
+
+      const status = t.ok ? 'SYSTEM NOMINAL' : 'SYSTEM BLOCKED';
+      els.statusText.textContent = status;
+      els.statusText.style.color = t.ok ? '#22c55e' : '#ef4444';
+      els.statusDot.style.background = t.ok ? '#22c55e' : '#ef4444';
+
+      if (t.ok) {
+        els.resultHeadline.textContent = 'OK — launch-ready';
+        els.resultText.innerHTML = `Forward yield: ${t.forwardYield.toFixed(2)}%<br>Isolation: ${t.isolation.toFixed(2)} dB<br>Digest: ${digest.slice(0, 16)}…`;
+        els.console.textContent = `Ruby OS: "All parity checks green. Bus holding at ${t.resistance.toFixed(2)} mΩ · Malus yield ${t.forwardYield.toFixed(2)}% · Isolation ${t.isolation.toFixed(2)} dB. Cleared for launch."\n\nSHA256  ${digest.slice(0, 48)}…`;
+      } else {
+        els.resultHeadline.textContent = 'BLOCKED — deterministic halt';
+        els.resultText.innerHTML = `First blocker: ${t.blockers[0]}<br>Digest: ${digest.slice(0, 16)}…`;
+        els.console.textContent = `Ruby OS: "Hold up — deterministic halt detected.\n  →  ${t.blockers[0]}\nEmergency relays engaged. Correct the bench settings."\n\nSHA256  ${digest.slice(0, 48)}…`;
+      }
+
+      drawMap(t);
+    }
+
+    function drawMap(t) {
+      const c = els.map;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = c.getBoundingClientRect();
+      c.width = Math.floor(rect.width * dpr);
+      c.height = Math.floor(Math.max(rect.height, 430) * dpr);
+      const ctx = c.getContext('2d');
+      ctx.scale(dpr, dpr);
+      const w = rect.width;
+      const h = Math.max(rect.height, 430);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h * 0.52;
+      const maxR = Math.min(w, h) * 0.36;
+      const radii = [0.94, 0.78, 0.62, 0.45, 0.26].map(r => maxR * r);
+      const names = ['R-5  Boundary Interlock', 'R-4  Cryogenic Grid', 'R-3  Faraday Isolation Core', 'R-2  Lamination Production', 'R-1  Core Power Vault'];
+      const keys = ['R5', 'R4', 'R3', 'R2', 'R1'];
+
+      ctx.strokeStyle = '#1f2a38';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR + 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.font = 'bold 12px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      for (let i = 0; i < radii.length; i++) {
+        const r = radii[i];
+        const key = keys[i];
+        const color = t.colors[key];
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash(color === '#ef4444' ? [4, 3] : []);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.fillText(names[i], cx, cy - r - 12);
+      }
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = t.colors.R1 === '#22c55e' ? '#3d8bfd' : '#ef4444';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0a0e14';
+      ctx.font = 'bold 16px Segoe UI';
+      ctx.fillText('◆', cx, cy + 6);
+
+      ctx.fillStyle = '#111820';
+      ctx.strokeStyle = '#1f2a38';
+      ctx.lineWidth = 1;
+      roundedRect(ctx, 12, 12, 230, 126, 8, true, true);
+      ctx.fillStyle = '#c9d1d9';
+      ctx.font = '12px Courier New';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      const summary = [
+        ['Forward Yield', `${t.forwardYield.toFixed(2)} %`],
+        ['Rev Isolation', `${t.isolation.toFixed(2)} dB`],
+        ['Thermal Load', `${t.thermal.toFixed(2)} W/cm²`],
+        ['Pin Resistance', `${t.resistance.toFixed(2)} mΩ`],
+        ['Cryo Temp', `${t.cryo.toFixed(2)} K`],
+      ];
+      summary.forEach((row, i) => {
+        ctx.fillText(`${row[0].padEnd(14)} ${row[1]}`, 22, 22 + i * 20);
+      });
+
+      const lx = w - 148;
+      roundedRect(ctx, lx, 12, w - 24, 76, 8, true, true);
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(lx + 18, 27, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#c9d1d9';
+      ctx.font = '13px Segoe UI';
+      ctx.fillText('Compliant', lx + 32, 21);
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(lx + 18, 52, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#c9d1d9';
+      ctx.fillText('Blocked', lx + 32, 46);
+    }
+
+    function roundedRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function reset() {
+      els.angle.value = 0;
+      els.thermal.value = 12.5;
+      els.resistance.value = 8.31;
+      els.cryo.value = 40.0;
+      render();
+    }
+
+    function startStop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        return;
+      }
+      timer = setInterval(() => {
+        phase += 0.08;
+        els.angle.value = (0.9 * Math.sin(phase * 0.75)).toFixed(3);
+        els.thermal.value = (12.5 + 6.0 * (0.5 + 0.5 * Math.sin(phase * 1.3))).toFixed(2);
+        els.resistance.value = (8.31 + 6.5 * (0.5 + 0.5 * Math.sin(phase * 0.97 + 1.5))).toFixed(2);
+        els.cryo.value = (39.8 + 2.8 * (0.5 + 0.5 * Math.sin(phase * 0.61 + 0.4))).toFixed(2);
+        render();
+      }, 120);
+    }
+
+    ['angle', 'thermal', 'resistance', 'cryo'].forEach(id => els[id].addEventListener('input', render));
+    els.reset.addEventListener('click', reset);
+    els.reeval.addEventListener('click', render);
+    els.autotoggle.addEventListener('click', startStop);
+    els.autoRun.addEventListener('change', () => {
+      if (els.autoRun.checked && !timer) startStop();
+      if (!els.autoRun.checked && timer) startStop();
+    });
+    window.addEventListener('resize', render);
+    reset();
+  </script>
+</body>
+</html>
