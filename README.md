@@ -6,7 +6,35 @@ It does not perform real speech synthesis; instead it generates simple
 placeholder WAV files so the UI can be developed and demonstrated
 without connecting to an external TTS provider.
 
-## Features
+## Ruby OS AI
+
+The repository now serves a browser-based Ruby OS AI interface at the root
+site.
+
+### What it does
+
+- A polished chat UI with conversation history
+- Provider presets for OpenAI-compatible APIs, Anthropic, xAI, and OpenRouter
+- Server-side proxying through `/api/chat` so browser CORS does not block the
+  provider request
+- A health endpoint at `/api/health`
+- Local-only API key entry in the browser session
+
+### How to use it
+
+1. Open the live site.
+2. Choose a provider preset or enter a custom endpoint.
+3. Paste your API key.
+4. Pick a model.
+5. Send a message.
+
+### Supported provider styles
+
+- OpenAI-compatible chat-completions endpoints
+- Anthropic Messages API
+- Any gateway that speaks the same chat-completions format as OpenAI
+
+## Features from the earlier backend
 
 - `GET /api/tts/voices` – returns a curated list of demo voice options.
 - `GET/POST /api/tts/settings` – reads and updates the active voice,
@@ -15,28 +43,6 @@ without connecting to an external TTS provider.
   with the submitted text length and returns metadata for the front-end.
 - `GET /api/tts/audio/<filename>` – serves previously generated audio files
   to the in-browser player or for download.
-
-## Ruby OS v4.2 simulation
-
-A standalone Ruby OS v4.2 simulation is included at:
-
-- `Newwave.v.1` — Tkinter simulation dashboard
-
-Run it directly:
-
-```bash
-python3 Newwave.v.1
-```
-
-Or use the repo launcher:
-
-```bash
-npm run ruby-os
-```
-
-The simulation opens a Tkinter dashboard with four live telemetry controls,
-a five-ring facility map, pass/block status feedback, deterministic blocker
-reporting, SHA-256 state digests, and an optional auto-drift mode.
 
 ## Getting started
 
@@ -72,5 +78,3 @@ reporting, SHA-256 state digests, and an optional auto-drift mode.
   generated waveform so that UI controls have visible effects.
 - Replace the `_generate_waveform` function with calls to your preferred
   TTS engine when you are ready to integrate real speech synthesis.
-- The Ruby OS v4.2 dashboard is a standalone local simulation and does not
-  replace or modify the Cloudflare Worker runtime in this repository.
