@@ -2,13 +2,13 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "newwave",
   "main": "src/index.ts",
-  "compatibility_date": "2026-07-12",
+  "compatibility_date": "2026-08-27",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": true,
   "vars": {
     "ENVIRONMENT": "production",
-    "ALLOWED_ORIGIN": "*"
+    "ALLOWED_ORIGIN": "https://rubyos.knockoutforever.com"
   },
   "observability": {
     "enabled": true,
