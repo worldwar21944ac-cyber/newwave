@@ -10,6 +10,9 @@
     "ENVIRONMENT": "production",
     "ALLOWED_ORIGIN": "https://rubyos.knockoutforever.com"
   },
+  "ai": {
+    "binding": "AI"
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
