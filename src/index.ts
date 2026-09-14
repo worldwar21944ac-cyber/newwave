@@ -28,7 +28,7 @@ function json(data: JsonValue, status = 200, headers?: HeadersInit): Response {
 
 function corsHeaders(request: Request, env: Env): HeadersInit {
   const requestOrigin = request.headers.get("origin");
-  const configuredOrigin = env.ALLOWED_ORIGIN || "*";
+  const configuredOrigin: string = env.ALLOWED_ORIGIN || "*";
   const allowOrigin = configuredOrigin === "*" ? "*" : requestOrigin === configuredOrigin ? configuredOrigin : "null";
 
   return {
