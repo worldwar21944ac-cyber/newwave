@@ -1,0 +1,31 @@
+name = "ruby-os-ai"
+main = "worker.mjs"
+compatibility_date = "2026-09-16"
+workers_dev = false
+
+routes = [
+  { pattern = "ruby-os-ai.wwwknockoutforever.com/*", zone_name = "wwwknockoutforever.com" }
+]
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "AUDIT_DB"
+database_name = "ruby-os-business-core"
+database_id = "REPLACE_WITH_REAL_D1_ID"
+
+[[kv_namespaces]]
+binding = "GATEWAY_AUTH"
+id = "REPLACE_WITH_GATEWAY_AUTH_KV_ID"
+
+[[kv_namespaces]]
+binding = "KYC_SANCTIONS"
+id = "REPLACE_WITH_KYC_SANCTIONS_KV_ID"
+
+[[r2_buckets]]
+binding = "PARCHMENT"
+bucket_name = "ruby-os-evidence-vault"
+
+[vars]
+RUBY_DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct"
