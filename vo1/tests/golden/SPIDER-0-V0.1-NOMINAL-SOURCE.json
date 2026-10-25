@@ -1,0 +1,35 @@
+{
+  "id": "SPIDER-0-V0.1-NOMINAL-SOURCE",
+  "status": "source-example-pending-canonical-validation",
+  "message": {
+    "magic": 21328,
+    "version": 1,
+    "msg_type": 1,
+    "node_id": "VO1-ASY-0001",
+    "seq": 1042,
+    "timestamp": 1786684800,
+    "flags": 2,
+    "payload_len_claimed": 44,
+    "payload": {
+      "1": 215,
+      "2": 142,
+      "3": 48,
+      "4": 92,
+      "5": 340,
+      "6": 980,
+      "7": 42,
+      "8": 240,
+      "9": 1,
+      "10": 1,
+      "11": 2,
+      "12": 0,
+      "13": 0
+    },
+    "signature_hex": "4b8c9f220d91a27e7fa403b21849d74998782a170560b411daea3027b409cdfe89ab2e3401fae620c45167b542031a613589b251390f70a597a13c9e99a8050e"
+  },
+  "acceptance": {
+    "canonical_cbor": false,
+    "signature_verified": false,
+    "reason": "The received example must be independently re-encoded under RFC 8949 deterministic ordering before it can become a golden vector."
+  }
+}
