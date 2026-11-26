@@ -72,3 +72,18 @@ No provider is marked active until its actual vendor, API version, signature for
 ## Current integration boundary
 
 The repository's WP-04 PR #12 contains a pure collection/recognition/settlement evidence guard and tests. It is not a deployed telecom/radio adapter and does not yet connect the payment Worker to provider webhooks. This blueprint is additive documentation and schema/code foundation only; it does not claim a live connection.
+
+
+## Observed Cloudflare staging inventory (read-only audit, 2026-11-26)
+
+The account already has a partial webhook/event foundation:
+
+- `stripe-webhook-v2-staging`, `unit-webhook-v2-staging` and `modern-treasury-webhook-v2-staging` use the shared `webhooks-staging` D1 database and `void-cash-events` queue.
+- The shared D1 database has a generic `webhook_events_v2` receipt table keyed by `(provider, id)`. The existing adapters verify provider-specific signatures before parsing and use insert-once event receipt logic.
+- `void-event-consumer` consumes the cash-event queue and writes idempotent audit events. Its inspected handler is not yet a telecom/radio usage meter or broadcast-event adapter.
+- `lot9-syndication-staging` exposes the radio matrix and incident intake over D1. Its health response reports Cloudflare Stream subscription pending and evidence storage in D1 fallback mode. No carrier, SMS, SIP, playout, transmitter, STL or microwave vendor webhook route was found in its inspected source.
+- `knockout-connect-staging` has a Stripe webhook route and Connect onboarding/checkout routes. Its inspected source declares version 0.3.4 while its environment binding reports VERSION 0.1.6. Its configured Stripe platform-account variable also does not match the selected Bervashun Trust sandbox platform context. Treat this as a staging configuration blocker; no binding or secret was changed during this work.
+
+The existing `webhooks-staging` database and `void-cash-events` queue are candidates for a shared provider event backbone. They are not yet a complete telecom/radio billing system. The separate telecom/radio usage ledger and provider-account mapping must be added through a reviewed additive migration before any new usage is recorded. Do not change the existing `webhook_events_v2` table or WP-04 tables.
+
+The deployed Worker sources are not yet represented as a complete, auditable source tree in this repository. Keep the public contract/schema/tests here, and place provider secrets and deployable Worker source in a private, version-controlled Worker repository before connecting vendor credentials or releasing code.
