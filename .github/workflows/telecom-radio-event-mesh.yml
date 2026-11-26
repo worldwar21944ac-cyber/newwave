@@ -24,4 +24,4 @@ jobs:
       - name: Validate event schema JSON
         run: node -e "JSON.parse(require('node:fs').readFileSync('schemas/telecom-radio-event.schema.json', 'utf8'))"
       - name: Run connector event tests
-        run: node --test tests/connectors/event-ingestion.test.mjs
+        run: node --test tests/connectors/*.test.mjs
