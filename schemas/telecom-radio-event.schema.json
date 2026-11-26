@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knockoutforever.com/schemas/telecom-radio-event.schema.json",
+  "title": "Normalized Telecom and Radio Provider Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "provider",
+    "provider_account_ref",
+    "tenant_id",
+    "environment",
+    "event_type",
+    "occurred_at",
+    "received_at",
+    "signature_verified",
+    "data"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "provider_account_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "tenant_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "environment": {
+      "enum": [
+        "sandbox",
+        "staging",
+        "production"
+      ]
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]{1,119}$"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signature_verified": {
+      "const": true
+    },
+    "signature_scheme": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "signature_key_version": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "correlation_id": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "resource_ref": {
+      "type": "string",
+      "maxLength": 240
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "quantity",
+        "unit",
+        "billable"
+      ],
+      "properties": {
+        "metric": {
+          "enum": [
+            "api_requests",
+            "sms_segments",
+            "voice_seconds",
+            "radio_playout_events",
+            "telemetry_events",
+            "storage_bytes"
+          ]
+        },
+        "quantity": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "billable": {
+          "type": "boolean"
+        },
+        "billing_reason": {
+          "type": "string",
+          "maxLength": 160
+        }
+      }
+    },
+    "data": {
+      "type": "object"
+    }
+  }
+}

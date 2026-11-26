@@ -1,0 +1,29 @@
+name: Telecom and radio event mesh validation
+
+on:
+  push:
+    branches: [telecom-radio-api-mesh-staging]
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/connectors/**"
+      - "tests/connectors/**"
+      - "schemas/telecom-radio-event.schema.json"
+      - "docs/telecom-radio/**"
+      - ".github/workflows/telecom-radio-event-mesh.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate event schema JSON
+        run: node -e "JSON.parse(require('node:fs').readFileSync('schemas/telecom-radio-event.schema.json', 'utf8'))"
+      - name: Run connector event tests
+        run: node --test tests/connectors/*.test.mjs
