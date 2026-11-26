@@ -1,6 +1,8 @@
 name: Telecom and radio event mesh validation
 
 on:
+  push:
+    branches: [telecom-radio-api-mesh-staging]
   pull_request:
     branches: [main]
     paths:
