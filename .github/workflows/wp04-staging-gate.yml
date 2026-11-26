@@ -1,0 +1,24 @@
+name: WP-04 staging evidence gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/wp04/**"
+      - "tests/wp04/**"
+      - "docs/wp04/**"
+      - ".github/workflows/wp04-staging-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  provider-evidence-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run WP-04 evidence-gate tests
+        run: node --test tests/wp04/stagingGuard.test.mjs
